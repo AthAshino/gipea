@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "gipea"
+version = "0.0.1"
+description = "A gitea python API wrapper"
+authors = [ "Ashino",]
+license = "MIT"
+keywords = [ "gitea", "api",]
+readme = "README.md"
+homepage = "https://github.com/AthAshino/gipea"
+repository = "https://github.com/AthAshino/gipea"
+include = [ "LICENSE",]
+classifiers = [ "Development Status :: 4 - Beta", "Environment :: Console", "Intended Audience :: Developers", "Operating System :: OS Independent", "Topic :: Software Development :: Libraries :: Python Modules", "Topic :: Software Development :: Quality Assurance",]
+[[tool.poetry.packages]]
+include = "gipea"
+
+[tool.semantic_release]
+version_variable = [ "gitea/__init__.py:__version__",]
+version_toml = [ "pyproject.toml:tool.poetry.version",]
+branch = "main"
+build_command = "pip install poetry && poetry build"
+commit_parser = "emoji"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+requests = ">=2.31.0"
+frozendict = ">=2.3.8"
+
+[tool.semantic_release.commit_parser_options]
+major_tags = [ ":boom:", "💥",]
+minor_tags = [ ":sparkles:", "✨",]
+patch_tags = [ ":zap:", "⚡️", ":bug:", "🐛", ":ambulance:", "🚑️", ":lipstick:", "💄", ":lock:", "🔒️", ":arrow_down:", "⬇️", ":arrow_up:", "⬆️", ":pushpin:", "📌", ":chart_with_upwards_trend:", "📈", ":heavy_plus_sign:", "➕", ":heavy_minus_sign:", "➖", ":wrench:", "🔧", ":globe_with_meridians:", "🌐", ":pencil2:", "✏️", ":rewind:", "⏪️", ":package:", "📦️", ":alien:", "👽️", ":bento:", "🍱", ":wheelchair:", "♿️", ":speech_balloon:", "💬", ":card_file_box:", "🗃️", ":children_crossing:", "🚸", ":iphone:", "📱", ":egg:", "🥚", ":alembic:", "⚗️", ":mag:", "🔍️", ":label:", "🏷️", ":triangular_flag_on_post:", "🚩", ":goal_net:", "🥅", ":dizzy:", "💫", ":wastebasket:", "🗑️", ":passport_control:", "🛂", ":adhesive_bandage:", "🩹", ":necktie:", "👔",]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3.1"
+pytest-cov = "^2.12.1"
+ruff = "^0.0.286"
+python-semantic-release = "^8.0.8"
+toml = "^0.10.2"
