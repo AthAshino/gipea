@@ -13,7 +13,7 @@ Originally forked from https://github.com/Langenfeld/py-gitea.
 First get a `gitea` object wrapping access and authentication (via an api token) for your gitea instance:
 
 ```python
-from gipea import *
+from gitea import *
 
 gitea = Gitea(URL, TOKEN)
 ```
