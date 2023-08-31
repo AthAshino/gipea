@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gipea"
-version = "0.0.0"
+version = "0.1.0"
 description = "A gitea python API wrapper"
 authors = [ "Ashino",]
 license = "MIT"
@@ -11,14 +11,17 @@ repository = "https://github.com/AthAshino/gipea"
 include = [ "LICENSE",]
 classifiers = [ "Development Status :: 4 - Beta", "Environment :: Console", "Intended Audience :: Developers", "Operating System :: OS Independent", "Topic :: Software Development :: Libraries :: Python Modules", "Topic :: Software Development :: Quality Assurance",]
 [[tool.poetry.packages]]
-include = "gipea"
+include = "gitea"
 
 [tool.semantic_release]
-version_variable = [ "gitea/__init__.py:__version__",]
+version_variables = [ "gitea/__init__.py:__version__",]
 version_toml = [ "pyproject.toml:tool.poetry.version",]
 branch = "main"
 build_command = "pip install poetry && poetry build"
 commit_parser = "emoji"
+
+[tool.semantic_release.changelog]
+template_dir = "templates"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"

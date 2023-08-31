@@ -1,9 +1,14 @@
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
-from .gitea import (
-    Gitea,
+from .gitea import Gitea
+
+from .exceptions import (
+    GiteaException,
+    RequestException,
     NotFoundException,
-    AlreadyExistsException,
+    NotFoundRequestException,
+    AlreadyExistsRequestException,
+    ApiValidationRequestException,
 )
 from .apiobject import (
     User,
@@ -26,8 +31,12 @@ __all__ = [
     "Team",
     "Repository",
     "Branch",
+    "ApiValidationRequestException",
+    "GiteaException",
     "NotFoundException",
-    "AlreadyExistsException",
+    "RequestException",
+    "NotFoundRequestException",
+    "AlreadyExistsRequestException",
     "Issue",
     "Milestone",
     "Commit",

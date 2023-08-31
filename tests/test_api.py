@@ -3,8 +3,11 @@ import os
 import uuid
 
 import pytest
+from cryptography.hazmat.backends import default_backend as crypto_default_backend
+from cryptography.hazmat.primitives import serialization as crypto_serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 
-from gipea import (
+from gitea import (
     Gitea,
     User,
     Organization,
@@ -13,16 +16,18 @@ from gipea import (
     Issue,
     Milestone,
     MigrationServices,
+    NotFoundException,
+    AlreadyExistsRequestException,
 )
-from gipea import NotFoundException
+from gitea import NotFoundRequestException
 
 
-# put a ".token" file into your directory containg only the token for gipea
+# put a ".token" file into your directory containg only the token for gitea
 @pytest.fixture
 def instance(scope="module"):
     try:
-        url = os.getenv("GIPEA_URL", "http://localhost:3000")
-        token = os.getenv("GIPEA_TOKEN", open(".token", "r").read().strip())
+        url = os.getenv("GITEA_URL", "http://localhost:3000")
+        token = os.getenv("GITEA_TOKEN", open(".token", "r").read().strip())
         g = Gitea(url, token)
         print("Gitea Version: " + g.get_version())
         print("API-Token belongs to user: " + g.get_user().username)
@@ -43,6 +48,16 @@ test_team = (
     "team_" + uuid.uuid4().hex[:8]
 )  # team names seem to have a rather low max lenght
 test_repo = "repo_" + uuid.uuid4().hex[:8]
+test_ssh_key = rsa.generate_private_key(
+    backend=crypto_default_backend(), public_exponent=65537, key_size=2048
+)
+test_ssh_public_key = (
+    test_ssh_key.public_key()
+    .public_bytes(
+        crypto_serialization.Encoding.OpenSSH, crypto_serialization.PublicFormat.OpenSSH
+    )
+    .decode("utf-8")
+)
 
 
 def test_token_owner(instance):
@@ -56,17 +71,17 @@ def test_gitea_version(instance):
 
 
 def test_fail_get_non_existent_user(instance):
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundRequestException):
         User.request(instance, test_user)
 
 
 def test_fail_get_non_existent_org(instance):
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundRequestException):
         Organization.request(instance, test_org)
 
 
 def test_fail_get_non_existent_repo(instance):
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundRequestException):
         Repository.request(instance, test_user, test_repo)
 
 
@@ -80,6 +95,12 @@ def test_create_user(instance):
     assert not user.is_admin
     assert isinstance(user.id, int)
     assert user.is_admin is False
+
+
+def test_create_existing_user(instance):
+    email = test_user + "@example.org"
+    with pytest.raises(AlreadyExistsRequestException):
+        instance.create_user(test_user, email, "abcdefg1.23AB", send_notify=False)
 
 
 def test_change_user(instance):
@@ -106,6 +127,12 @@ def test_create_org(instance):
     assert not org.full_name
 
 
+def test_create_existing_org(instance):
+    user = instance.get_user()
+    with pytest.raises(AlreadyExistsRequestException):
+        instance.create_org(user, test_org, "some-desc", "loc")
+
+
 def test_non_changable_field(instance):
     org = Organization.request(instance, test_org)
     with pytest.raises(AttributeError):
@@ -119,6 +146,12 @@ def test_create_repo_userowned(instance):
     assert repo.owner == org
     assert repo.name == test_repo
     assert not repo.private
+
+
+def test_create_existing_repo_userowned(instance):
+    org = User.request(instance, test_user)
+    with pytest.raises(AlreadyExistsRequestException):
+        instance.create_repo(org, test_repo, "user owned repo")
 
 
 def test_edit_org_fields_and_commit(instance):
@@ -144,6 +177,12 @@ def test_create_repo_orgowned(instance):
     assert repo.owner == org
     assert repo.name == test_repo
     assert not repo.private
+
+
+def test_create_existing_repo_orgowned(instance):
+    org = Organization.request(instance, test_org)
+    with pytest.raises(AlreadyExistsRequestException):
+        instance.create_repo(org, test_repo, "descr")
 
 
 def test_patch_repo(instance):
@@ -236,6 +275,12 @@ def test_create_team(instance):
     assert team.name == test_team
     assert team.description == "descr"
     assert team.organization == org
+
+
+def test_create_existing_team(instance):
+    org = Organization.request(instance, test_org)
+    with pytest.raises(AlreadyExistsRequestException):
+        instance.create_team(org, test_team, "descr")
 
 
 def test_patch_team(instance):
@@ -356,7 +401,7 @@ def test_delete_repo_userowned(instance):
     user = User.request(instance, test_user)
     repo = Repository.request(instance, user.username, test_repo)
     repo.delete()
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundRequestException):
         Repository.request(instance, test_user, test_repo)
 
 
@@ -371,7 +416,7 @@ def test_delete_repo_orgowned(instance):
     org = Organization.request(instance, test_org)
     repo = Repository.request(instance, org.username, test_repo)
     repo.delete()
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundRequestException):
         Repository.request(instance, test_user, test_repo)
 
 
@@ -423,7 +468,7 @@ def test_delete_teams(instance):
 def test_delete_org(instance):
     org = Organization.request(instance, test_org)
     org.delete()
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundRequestException):
         Organization.request(instance, test_org)
 
 
@@ -433,7 +478,7 @@ def test_delete_user(instance):
     user = instance.create_user(user_name, email, "abcdefg1.23AB", send_notify=False)
     assert user.username == user_name
     user.delete()
-    with pytest.raises(NotFoundException):
+    with pytest.raises(NotFoundRequestException):
         User.request(instance, user_name)
 
 
@@ -460,12 +505,39 @@ def test_migrate_repo_github(instance):
         MigrationServices.GITHUB,
         "https://github.com/Langenfeld/py-gitea",
         test_repo,
-        "cloning py-gipea to test py-gipea",
+        "cloning py-gitea to test py-gitea",
     )
     assert repo.name == test_repo
-    assert repo.description == "cloning py-gipea to test py-gipea"
+    assert repo.description == "cloning py-gitea to test py-gitea"
     assert not repo.private
     assert repo.owner.username == "test"
     assert "README.md" in [f.name for f in repo.get_git_content()]
     repo = Repository.request(instance, "test", test_repo)
     repo.delete()
+
+
+def test_add_ssh_key(instance):
+    user = User.request(instance, test_user)
+    user.add_ssh_key(
+        "test",
+        test_ssh_public_key,
+    )
+    keys = user.keys
+    key = next((_key for _key in keys if _key.title == "test"))
+    assert key
+    assert key.key == str(test_ssh_public_key)
+
+
+def test_add_existing_ssh_key(instance):
+    user = User.request(instance, test_user)
+    with pytest.raises(AlreadyExistsRequestException):
+        user.add_ssh_key(
+            "test",
+            str(test_ssh_public_key),
+        )
+
+
+def test_delete_key(instance):
+    user = User.request(instance, test_user)
+    key = user.get_key_by_name("test")
+    key.delete()

@@ -5,7 +5,12 @@ from datetime import datetime
 from typing import List, Tuple, Dict, Sequence, Optional, Union, Set, TYPE_CHECKING
 
 from .baseapiobject import ReadonlyApiObject, ApiObject
-from .exceptions import ConflictException, NotFoundException
+from .exceptions import (
+    ConflictRequestException,
+    NotFoundException,
+    AlreadyExistsRequestException,
+    ApiValidationRequestException,
+)
 
 if TYPE_CHECKING:
     from gitea import Gitea
@@ -40,7 +45,7 @@ class Organization(ApiObject):
     @classmethod
     def parse_response(cls, gitea, result) -> "Organization":
         api_object = super().parse_response(gitea, result)
-        # add "name" field to make this behave similar to users for gipea < 1.18
+        # add "name" field to make this behave similar to users for gitea < 1.18
         # also necessary for repository-owner when org is repo owner
         if not hasattr(api_object, "name"):
             Organization._add_read_property("name", result["username"], api_object)
@@ -78,28 +83,35 @@ class Organization(ApiObject):
             AlreadyExistsException: If the Repository exists already.
             Exception: If something else went wrong.
         """
-        result = self.gitea.requests_post(
-            f"/orgs/{self.name}/repos",
-            data={
-                "name": repoName,
-                "description": description,
-                "private": private,
-                "auto_init": autoInit,
-                "gitignores": gitignores,
-                "license": license,
-                "issue_labels": issue_labels,
-                "readme": readme,
-                "default_branch": default_branch,
-            },
-        )
-        if "id" in result:
-            self.gitea.logger.info(
-                "Successfully created Repository %s " % result["name"]
+        try:
+            result = self.gitea.requests_post(
+                f"/orgs/{self.name}/repos",
+                data={
+                    "name": repoName,
+                    "description": description,
+                    "private": private,
+                    "auto_init": autoInit,
+                    "gitignores": gitignores,
+                    "license": license,
+                    "issue_labels": issue_labels,
+                    "readme": readme,
+                    "default_branch": default_branch,
+                },
             )
-        else:
-            self.gitea.logger.error(result["message"])
-            raise Exception("Repository not created... (gipea: %s)" % result["message"])
-        return Repository.parse_response(self, result)
+            if "id" in result:
+                self.gitea.logger.info(
+                    "Successfully created Repository %s " % result["name"]
+                )
+            else:
+                self.gitea.logger.error(result["message"])
+                raise Exception(
+                    "Repository not created... (gitea: %s)" % result["message"]
+                )
+            return Repository.parse_response(self, result)
+        except ConflictRequestException as e:
+            if "The repository with the same name already exists" in e.response.text:
+                raise AlreadyExistsRequestException(e.response)
+            raise e
 
     def get_repositories(self) -> List["Repository"]:
         results = self.gitea.requests_get_paginated(
@@ -254,41 +266,57 @@ class User(ApiObject):
             AlreadyExistsException: If the Repository exists already.
             Exception: If something else went wrong.
         """
-        result = self.gitea.requests_post(
-            "/user/repos",
-            data={
-                "name": repoName,
-                "description": description,
-                "private": private,
-                "auto_init": autoInit,
-                "gitignores": gitignores,
-                "license": license,
-                "issue_labels": issue_labels,
-                "readme": readme,
-                "default_branch": default_branch,
-            },
-        )
-        if "id" in result:
-            self.gitea.logger.info(
-                "Successfully created Repository %s " % result["name"]
+        try:
+            result = self.gitea.requests_post(
+                "/user/repos",
+                data={
+                    "name": repoName,
+                    "description": description,
+                    "private": private,
+                    "auto_init": autoInit,
+                    "gitignores": gitignores,
+                    "license": license,
+                    "issue_labels": issue_labels,
+                    "readme": readme,
+                    "default_branch": default_branch,
+                },
             )
-        else:
-            self.gitea.logger.error(result["message"])
-            raise Exception("Repository not created... (gipea: %s)" % result["message"])
-        return Repository.parse_response(self, result)
+            if "id" in result:
+                self.gitea.logger.info(
+                    "Successfully created Repository %s " % result["name"]
+                )
+            else:
+                self.gitea.logger.error(result["message"])
+                raise Exception(
+                    "Repository not created... (gitea: %s)" % result["message"]
+                )
+            return Repository.parse_response(self, result)
+        except ConflictRequestException as e:
+            if "The repository with the same name already exists" in e.response.text:
+                raise AlreadyExistsRequestException(e.response)
+            raise e
 
     def add_ssh_key(self, key_name: str, key_value: str, read_only: bool = False):
         """Create a user ssh key"""
-        result = self.gitea.requests_post(
-            User.USER_KEYS % self.login,
-            data={"key": key_value, "read_only": read_only, "title": key_name},
-        )
-        if "id" in result:
-            self.gitea.logger.info("Successfully added Ssh Key %s " % result["title"])
-        else:
-            self.gitea.logger.error(result["message"])
-            raise Exception("Ssh key not created... (gipea: %s)" % result["message"])
-        return Key.parse_response(self, result)
+        try:
+            result = self.gitea.requests_post(
+                User.USER_KEYS % self.login,
+                data={"key": key_value, "read_only": read_only, "title": key_name},
+            )
+            if "id" in result:
+                self.gitea.logger.info(
+                    "Successfully added Ssh Key %s " % result["title"]
+                )
+            else:
+                self.gitea.logger.error(result["message"])
+                raise Exception(
+                    "Ssh key not created... (gitea: %s)" % result["message"]
+                )
+            return Key.parse_response(self, result)
+        except ApiValidationRequestException as e:
+            if "Key content has been used as non-deploy key" in e.response.text:
+                raise AlreadyExistsRequestException(e.response)
+            raise e
 
     def get_repositories(self) -> List["Repository"]:
         """Get all Repositories owned by this User."""
@@ -394,7 +422,7 @@ class Branch(ReadonlyApiObject):
 
     _fields_to_parsers = {
         # This is not a commit object
-        # "commit": lambda gipea, c: Commit.parse_response(gipea, c)
+        # "commit": lambda gitea, c: Commit.parse_response(gitea, c)
     }
 
     @classmethod
@@ -486,12 +514,15 @@ class Repository(ApiObject):
 
     def add_branch(self, create_from: Branch, newname: str) -> "Branch":
         """Add a branch to the repository"""
-        # Note: will only work with gipea 1.13 or higher!
+        # Note: will only work with gitea 1.13 or higher!
         data = {"new_branch_name": newname, "old_branch_name": create_from.name}
-        result = self.gitea.requests_post(
-            Repository.REPO_BRANCHES % (self.owner.username, self.name), data=data
-        )
-        return Branch.parse_response(self.gitea, result)
+        try:
+            result = self.gitea.requests_post(
+                Repository.REPO_BRANCHES % (self.owner.username, self.name), data=data
+            )
+            return Branch.parse_response(self.gitea, result)
+        except ConflictRequestException as e:
+            raise e
 
     def get_issues(self) -> List["Issue"]:
         """Get all Issues of this Repository (open and closed)"""
@@ -504,7 +535,7 @@ class Repository(ApiObject):
                 Repository.REPO_COMMITS % (self.owner.username, self.name),
                 page_limit=page_limit,
             )
-        except ConflictException as err:
+        except ConflictRequestException as err:
             logging.warning(err)
             logging.warning(
                 "Repository %s/%s is Empty" % (self.owner.username, self.name)
@@ -554,11 +585,16 @@ class Repository(ApiObject):
             "closed": False,
             "title": title,
         }
-        result = self.gitea.requests_post(
-            Repository.REPO_ISSUES.format(owner=self.owner.username, repo=self.name),
-            data=data,
-        )
-        return Issue.parse_response(self.gitea, result)
+        try:
+            result = self.gitea.requests_post(
+                Repository.REPO_ISSUES.format(
+                    owner=self.owner.username, repo=self.name
+                ),
+                data=data,
+            )
+            return Issue.parse_response(self.gitea, result)
+        except ConflictRequestException as e:
+            raise e
 
     def create_milestone(
         self, title: str, description: str, due_date: str = None, state: str = "open"
@@ -569,18 +605,24 @@ class Repository(ApiObject):
         data = {"title": title, "description": description, "state": state}
         if due_date:
             data["due_date"] = due_date
-        result = self.gitea.requests_post(url, data=data)
-        return Milestone.parse_response(self.gitea, result)
+        try:
+            result = self.gitea.requests_post(url, data=data)
+            return Milestone.parse_response(self.gitea, result)
+        except ConflictRequestException as e:
+            raise e
 
     def create_gitea_hook(self, hook_url: str, events: List[str]):
         url = f"/repos/{self.owner.username}/{self.name}/hooks"
         data = {
-            "type": "gipea",
+            "type": "gitea",
             "config": {"content_type": "json", "url": hook_url},
             "events": events,
             "active": True,
         }
-        return self.gitea.requests_post(url, data=data)
+        try:
+            return self.gitea.requests_post(url, data=data)
+        except ConflictRequestException as e:
+            raise e
 
     def list_hooks(self):
         url = f"/repos/{self.owner.username}/{self.name}/hooks"
@@ -634,7 +676,10 @@ class Repository(ApiObject):
                 team.id for team in new_teams if team in new_owner.get_teams()
             ]
             data["team_ids"] = new_team_ids
-        self.gitea.requests_post(url, data=data)
+        try:
+            self.gitea.requests_post(url, data=data)
+        except ConflictRequestException as e:
+            raise e
         # TODO: make sure this instance is either updated or discarded
 
     def get_git_content(self, commit: "Commit" = None) -> List["Content"]:
@@ -715,40 +760,44 @@ class Repository(ApiObject):
             AlreadyExistsException: If the Repository exists already.
             Exception: If something else went wrong.
         """
-        result = gitea.requests_post(
-            cls.REPO_MIGRATE,
-            data={
-                "auth_password": auth_password,
-                "auth_token": auth_token,
-                "auth_username": auth_username,
-                "clone_addr": clone_addr,
-                "description": description,
-                "issues": issues,
-                "labels": labels,
-                "lfs": lfs,
-                "lfs_endpoint": lfs_endpoint,
-                "milestones": milestones,
-                "mirror": mirror,
-                "mirror_interval": mirror_interval,
-                "private": private,
-                "pull_requests": pull_requests,
-                "releases": releases,
-                "repo_name": repo_name,
-                "repo_owner": repo_owner,
-                "service": service,
-                "wiki": wiki,
-            },
-        )
-        if "id" in result:
-            gitea.logger.info(
-                "Successfully created Job to Migrate Repository %s " % result["name"]
+        try:
+            result = gitea.requests_post(
+                cls.REPO_MIGRATE,
+                data={
+                    "auth_password": auth_password,
+                    "auth_token": auth_token,
+                    "auth_username": auth_username,
+                    "clone_addr": clone_addr,
+                    "description": description,
+                    "issues": issues,
+                    "labels": labels,
+                    "lfs": lfs,
+                    "lfs_endpoint": lfs_endpoint,
+                    "milestones": milestones,
+                    "mirror": mirror,
+                    "mirror_interval": mirror_interval,
+                    "private": private,
+                    "pull_requests": pull_requests,
+                    "releases": releases,
+                    "repo_name": repo_name,
+                    "repo_owner": repo_owner,
+                    "service": service,
+                    "wiki": wiki,
+                },
             )
-        else:
-            gitea.logger.error(result["message"])
-            raise Exception(
-                "Repository not Migrated... (gipea: %s)" % result["message"]
-            )
-        return Repository.parse_response(gitea, result)
+            if "id" in result:
+                gitea.logger.info(
+                    "Successfully created Job to Migrate Repository %s "
+                    % result["name"]
+                )
+            else:
+                gitea.logger.error(result["message"])
+                raise Exception(
+                    "Repository not Migrated... (gitea: %s)" % result["message"]
+                )
+            return Repository.parse_response(gitea, result)
+        except ConflictRequestException as e:
+            raise e
 
 
 class Milestone(ApiObject):
@@ -816,7 +865,7 @@ class Commit(ReadonlyApiObject):
         super().__init__(gitea)
 
     _fields_to_parsers = {
-        # NOTE: api may return None for commiters that are no gipea users
+        # NOTE: api may return None for commiters that are no gitea users
         "author": lambda gitea, u: User.parse_response(gitea, u)
         if u
         else None

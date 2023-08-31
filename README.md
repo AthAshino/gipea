@@ -83,7 +83,7 @@ The default server credentials that will be used are:
 url = `http://localhost:3000` and admin-user token located in `.token`.
 
 These parameters can be overwritten with the env variables:
-GIPEA_URL
-GIPEA_TOKEN
+GITEA_URL
+GITEA_TOKEN
 
 The admin user must be named ``test``, with email ``secondarytest@test.org``.

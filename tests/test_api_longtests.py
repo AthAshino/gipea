@@ -3,15 +3,15 @@ import uuid
 
 import pytest
 
-from gipea import Gitea, Organization, Issue
+from gitea import Gitea, Organization, Issue
 
 
-# put a ".token" file into your directory containg only the token for gipea
+# put a ".token" file into your directory containg only the token for gitea
 @pytest.fixture
 def instance(scope="module"):
     try:
-        url = os.getenv("GIPEA_URL", "http://localhost:3000")
-        token = os.getenv("GIPEA_TOKEN", open(".token", "r").read().strip())
+        url = os.getenv("GITEA_URL", "http://localhost:3000")
+        token = os.getenv("GITEA_TOKEN", open(".token", "r").read().strip())
         g = Gitea(url, token)
         print("Gitea Version: " + g.get_version())
         print("API-Token belongs to user: " + g.get_user().username)

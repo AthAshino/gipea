@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-"""Fixtures for testing py-gipea
+"""Fixtures for testing py-gitea
 
 Instructions
 ------------
-put a ".token" file into your directory containg only the token for gipea
+put a ".token" file into your directory containg only the token for gitea
 
 """
 
@@ -11,14 +11,14 @@ import os
 
 import pytest
 
-from gipea import Gitea
+from gitea import Gitea
 
 
 @pytest.fixture
 def instance(scope="module"):
     try:
-        url = os.getenv("GIPEA_URL")
-        token = os.getenv("GIPEA_TOKEN")
+        url = os.getenv("GITEA_URL")
+        token = os.getenv("GITEA_TOKEN")
         auth = os.getenv("GIPEA_AUTH")
         if not url:
             raise ValueError("No Gitea URL was provided")

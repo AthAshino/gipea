@@ -1,6 +1,6 @@
 from .exceptions import (
     ObjectIsInvalid,
-    MissiongEqualyImplementation,
+    MissingEquallyImplementation,
     RawRequestEndpointMissing,
 )
 
@@ -14,12 +14,12 @@ class ReadonlyApiObject:
         return "GiteaAPIObject (%s):" % (type(self))
 
     def __eq__(self, other):
-        """Compare only fields that are part of the gipea-data identity"""
-        raise MissiongEqualyImplementation()
+        """Compare only fields that are part of the gitea-data identity"""
+        raise MissingEquallyImplementation()
 
     def __hash__(self):
-        """Hash only fields that are part of the gipea-data identity"""
-        raise MissiongEqualyImplementation()
+        """Hash only fields that are part of the gitea-data identity"""
+        raise MissingEquallyImplementation()
 
     _fields_to_parsers = {}
 
@@ -43,7 +43,7 @@ class ReadonlyApiObject:
 
     @classmethod
     def parse_response(cls, gitea, result) -> "ReadonlyApiObject":
-        # gipea.logger.debug("Found api object of type %s (id: %s)" % (type(cls), id))
+        # gitea.logger.debug("Found api object of type %s (id: %s)" % (type(cls), id))
         api_object = cls(gitea)
         cls._initialize(gitea, api_object, result)
         return api_object

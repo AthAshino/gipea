@@ -4,7 +4,7 @@ with open("README.md") as readme_file:
     README = readme_file.read()
 
 setup_args = dict(
-    name="py-gipea",
+    name="py-gitea",
     version="0.2.7",
     description="A python wrapper for the Gitea API",
     long_description_content_type="text/markdown",
