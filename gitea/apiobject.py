@@ -185,6 +185,7 @@ class User(ApiObject):
     USER_MAIL = """/user/emails?sudo=%s"""  # <name>
     USER_KEYS = """/user/keys?sudo=%s"""  # <username>
     USER_PATCH = """/admin/users/%s"""  # <username>
+    USER_REPO = """/repos/{owner}/{repo}"""  # <username>, <reponame>
     ADMIN_DELETE_USER = """/admin/users/%s"""  # <username>
     ADMIN_EDIT_USER = """/admin/users/{username}"""  # <username>
     USER_HEATMAP = """/users/%s/heatmap"""  # <username>
@@ -323,6 +324,14 @@ class User(ApiObject):
         url = f"/users/{self.username}/repos"
         results = self.gitea.requests_get_paginated(url)
         return [Repository.parse_response(self.gitea, result) for result in results]
+
+    def get_repository_by_name(self, repository_name: str) -> Repository:
+        return Repository.parse_response(
+            self.gitea,
+            self.gitea.requests_get(
+                User.USER_REPO.format(owner=self.username, repo=repository_name)
+            ),
+        )
 
     def get_orgs(self) -> List[Organization]:
         """Get all Organizations this user is a member of."""

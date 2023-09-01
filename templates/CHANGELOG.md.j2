@@ -29,7 +29,7 @@
 * {{ commit.commit.message.rstrip() }} ([`{{ commit.commit.hexsha[:7] }}`]({{ commit.commit.hexsha | commit_hash_url }}))
 {% endfor %}
 {% elif type_ == "🐛" or type_ == ":bug:" or type_ == "🚑️" or type_ == ":ambulance:" or type_ == "🩹" or type_ == ":adhesive_bandage:" %}
-### 🐛 Bugs
+### 🐛 Fixes
 {% for commit in commits %}
 * {{ commit.commit.message.rstrip() }} ([`{{ commit.commit.hexsha[:7] }}`]({{ commit.commit.hexsha | commit_hash_url }}))
 {% endfor %}
