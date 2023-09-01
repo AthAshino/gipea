@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v0.4.0 (2023-09-01)
+
+
+### ✨ Features
+
+* ✨ Add delete_branch on Repository ([`fa0ffd4`](https://github.com/AthAshino/gipea/commit/fa0ffd4db0d6d5f17af8b304fadc981bc079c19f))
+
+
+
+
 ## v0.3.0 (2023-09-01)
 
 
