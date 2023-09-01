@@ -447,6 +447,8 @@ class Repository(ApiObject):
     )
     REPO_SEARCH = """/repos/search/%s"""  # <reponame>
     REPO_BRANCHES = """/repos/%s/%s/branches"""  # <owner>, <reponame>
+    REPO_BRANCH = """/repos/{owner}/{repo}/branches/{branch}"""  # <owner>, <reponame>,
+    # <branchname>
     REPO_ISSUES = """/repos/{owner}/{repo}/issues"""  # <owner, reponame>
     REPO_DELETE = """/repos/%s/%s"""  # <owner>, <reponame>
     REPO_TIMES = """/repos/%s/%s/times"""  # <owner>, <reponame>
@@ -520,6 +522,16 @@ class Repository(ApiObject):
             Repository.REPO_BRANCHES % (self.owner.username, self.name)
         )
         return [Branch.parse_response(self.gitea, result) for result in results]
+
+    def get_branch_by_name(self, branch_name: str) -> Branch:
+        return Branch.parse_response(
+            self.gitea,
+            self.gitea.requests_get(
+                Repository.REPO_BRANCH.format(
+                    owner=self.owner.username, repo=self.name, branch=branch_name
+                )
+            ),
+        )
 
     def add_branch(self, create_from: Branch, newname: str) -> "Branch":
         """Add a branch to the repository"""
