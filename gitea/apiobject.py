@@ -449,6 +449,7 @@ class Repository(ApiObject):
     REPO_BRANCHES = """/repos/%s/%s/branches"""  # <owner>, <reponame>
     REPO_BRANCH = """/repos/{owner}/{repo}/branches/{branch}"""  # <owner>, <reponame>,
     # <branchname>
+    REPO_BRANCH_DELETE = """/repos/{owner}/{repo}/branches/{branch}"""
     REPO_ISSUES = """/repos/{owner}/{repo}/issues"""  # <owner, reponame>
     REPO_DELETE = """/repos/%s/%s"""  # <owner>, <reponame>
     REPO_TIMES = """/repos/%s/%s/times"""  # <owner>, <reponame>
@@ -544,6 +545,13 @@ class Repository(ApiObject):
             return Branch.parse_response(self.gitea, result)
         except ConflictRequestException as e:
             raise e
+
+    def delete_branch(self, branch_name: str):
+        self.gitea.requests_delete(
+            Repository.REPO_BRANCH_DELETE.format(
+                owner=self.owner.username, repo=self.name, branch=branch_name
+            )
+        )
 
     def get_issues(self) -> List["Issue"]:
         """Get all Issues of this Repository (open and closed)"""
