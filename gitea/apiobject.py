@@ -455,6 +455,7 @@ class Repository(ApiObject):
     REPO_TIMES = """/repos/%s/%s/times"""  # <owner>, <reponame>
     REPO_USER_TIME = """/repos/%s/%s/times/%s"""  # <owner>, <reponame>, <username>
     REPO_COMMITS = "/repos/%s/%s/commits"  # <owner>, <reponame>
+    REPO_COMMIT = "/repos/{owner}/{repo}/commits/{sha}"  # <owner>, <reponame>
     REPO_TRANSFER = "/repos/{owner}/{repo}/transfer"
     REPO_MILESTONES = """/repos/{owner}/{repo}/milestones"""
 
@@ -571,6 +572,12 @@ class Repository(ApiObject):
             )
             results = []
         return [Commit.parse_response(self.gitea, result) for result in results]
+
+    def get_commit_by_sha(self, sha: str):
+        result = self.gitea.requests_get(
+            self.REPO_COMMIT.format(owner=self.owner.username, repo=self.name, sha=sha)
+        )
+        return Commit.parse_response(self.gitea, result)
 
     def get_issues_state(self, state) -> List["Issue"]:
         """Get issues of state Issue.open or Issue.closed of a repository."""
