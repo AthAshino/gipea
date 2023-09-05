@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import logging
 from datetime import datetime
 from typing import List, Tuple, Dict, Sequence, Optional, Union, Set, TYPE_CHECKING
@@ -728,19 +729,35 @@ class Repository(ApiObject):
         ]
         return result
 
+    def get_file_content_by_path(
+        self, content_path: str, ref: "Commit" or "Branch" = None
+    ) -> Union[str, List["Content"]]:
+        url = f"/repos/{self.owner.username}/{self.name}/contents/{content_path}"
+        if ref:
+            if isinstance(ref, Commit):
+                data = {"ref": ref.sha}
+            elif isinstance(ref, Branch):
+                data = {"ref": ref.name}
+
+        result = self.gitea.requests_get(url, data)
+        if result.get("type", "") == Content.FILE:
+            if encoding := result.get("encoding", None):
+                match encoding:
+                    case "base64":
+                        return base64.b64decode(result.get("content", "")).decode(
+                            "utf-8"
+                        )
+            else:
+                return result.get("content", "")
+
+        else:
+            return [Content.parse_response(self.gitea, f) for f in result]
+
     def get_file_content(
-        self, content: "Content", commit: "Commit" = None
+        self, content: "Content", ref: "Commit" or "Branch" = None
     ) -> Union[str, List["Content"]]:
         """https://try.gitea.io/api/swagger#/repository/repoGetContents"""
-        url = f"/repos/{self.owner.username}/{self.name}/contents/{content.path}"
-        data = {"ref": commit.sha} if commit else {}
-        if content.type == Content.FILE:
-            return self.gitea.requests_get(url, data)["content"]
-        else:
-            return [
-                Content.parse_response(self.gitea, f)
-                for f in self.gitea.requests_get(url, data)
-            ]
+        return self.get_file_content_by_path(content.path, ref)
 
     def create_file(self, file_path: str, content: str, data: dict = None):
         """https://try.gitea.io/api/swagger#/repository/repoCreateFile"""
