@@ -1,6 +1,18 @@
 # CHANGELOG
 
 
+## v0.5.0 (2023-09-05)
+
+
+### ✨ Features
+
+* ✨ Add get_file_content_by_path on Repository ([`7ba7d90`](https://github.com/AthAshino/gipea/commit/7ba7d906fe440ec467e1a67a817a3903fdac7dbd))
+
+* ✨ Add get_commit_by_sha on Repository ([`9085f21`](https://github.com/AthAshino/gipea/commit/9085f21d9130f35adabc3fd29a8abcd0a7c2af1f))
+
+
+
+
 ## v0.4.0 (2023-09-01)
 
 
