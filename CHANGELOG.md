@@ -1,6 +1,18 @@
 # CHANGELOG
 
 
+## v0.6.0 (2023-09-06)
+
+
+
+
+### ✨ Features
+
+* ✨ Allow &#34;Branch&#34; object to be used on get_git_content ([`806ae8f`](https://github.com/AthAshino/gipea/commit/806ae8f21aa26c0dd1a387686ef9996445d58a2e))
+
+
+
+
 ## v0.5.0 (2023-09-05)
 
 
