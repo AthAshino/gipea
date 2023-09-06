@@ -719,10 +719,15 @@ class Repository(ApiObject):
             raise e
         # TODO: make sure this instance is either updated or discarded
 
-    def get_git_content(self, commit: "Commit" = None) -> List["Content"]:
+    def get_git_content(self, ref: "Commit" or "Branch" = None) -> List["Content"]:
         """https://try.gitea.io/api/swagger#/repository/repoGetContentsList"""
         url = f"/repos/{self.owner.username}/{self.name}/contents"
-        data = {"ref": commit.sha} if commit else {}
+        data = {}
+        if ref:
+            if isinstance(ref, Commit):
+                data = {"ref": ref.sha}
+            elif isinstance(ref, Branch):
+                data = {"ref": ref.name}
         result = [
             Content.parse_response(self.gitea, f)
             for f in self.gitea.requests_get(url, data)
@@ -733,6 +738,7 @@ class Repository(ApiObject):
         self, content_path: str, ref: "Commit" or "Branch" = None
     ) -> Union[str, List["Content"]]:
         url = f"/repos/{self.owner.username}/{self.name}/contents/{content_path}"
+        data = {}
         if ref:
             if isinstance(ref, Commit):
                 data = {"ref": ref.sha}
