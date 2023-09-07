@@ -746,7 +746,7 @@ class Repository(ApiObject):
                 data = {"ref": ref.name}
 
         result = self.gitea.requests_get(url, data)
-        if result.get("type", "") == Content.FILE:
+        if isinstance(result, dict) and result.get("type", "") == Content.FILE:
             if encoding := result.get("encoding", None):
                 match encoding:
                     case "base64":
