@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v0.6.1 (2023-09-07)
+
+
+### 🐛 Fixes
+
+* 🐛 Fix error when get_file_content_by_path with path to a folder ([`88f811f`](https://github.com/AthAshino/gipea/commit/88f811fec2c5b8290a2639b0258ab34af5076a67))
+
+
+
+
 ## v0.6.0 (2023-09-06)
 
 
