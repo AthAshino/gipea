@@ -24,6 +24,7 @@ class Gitea:
     ADMIN_CREATE_USER = """/admin/users"""
     GET_USERS_ADMIN = """/admin/users"""
     ADMIN_REPO_CREATE = """/admin/users/%s/repos"""  # <ownername>
+    GENERATE_REPO_WITH_TEMPLATE = """/repos/%s/%s/generate"""  # <template_owner>, <template_repo>
     GITEA_VERSION = """/version"""
     GET_USER = """/user"""
     CREATE_ORG = """/admin/users/%s/orgs"""  # <username>
@@ -258,6 +259,7 @@ class Gitea:
         readme: str = "Default",
         issue_labels: str = None,
         default_branch="master",
+        template=False
     ):
         """Create a Repository as the administrator
 
@@ -285,6 +287,66 @@ class Gitea:
                     "issue_labels": issue_labels,
                     "readme": readme,
                     "default_branch": default_branch,
+                    "template": template,
+                },
+            )
+            if "id" in result:
+                self.logger.info("Successfully created Repository %s " % result["name"])
+            else:
+                self.logger.error(result["message"])
+                raise Exception(
+                    "Repository not created... (gitea: %s)" % result["message"]
+                )
+            return Repository.parse_response(self, result)
+        except ConflictRequestException as e:
+            if "The repository with the same name already exists" in e.response.text:
+                raise AlreadyExistsRequestException(e.response)
+            raise e
+
+    def create_repo_with_template(
+            self,
+            repo_owner: Union[User, Organization],
+            repo_name: str,
+            template_owner: str,
+            template_repo: str,
+            description: str = "",
+            private: bool = False,
+            default_branch: str = "master",
+            avatar: bool = True,
+            topics: bool = True,
+            git_content: bool = True,
+            git_hooks: bool = True,
+            labels: bool = True,
+            webhooks: bool = True
+    ):
+        """Create a Repository as the administrator
+
+        Throws:
+            AlreadyExistsException: If the Repository exists already.
+            Exception: If something else went wrong.
+
+        Note:
+            Non-admin users can not use this method. Please use instead
+            `gitea.User.create_repo` or `gitea.Organization.create_repo`.
+        """
+        # although this only says user in the api, this also works for
+        # organizations
+        assert isinstance(repo_owner, User) or isinstance(repo_owner, Organization)
+        try:
+            result = self.requests_post(
+                Gitea.GENERATE_REPO_WITH_TEMPLATE % (template_owner, template_repo),
+                data={
+                    "avatar": avatar,
+                    "default_branch": default_branch,
+                    "description": description,
+                    "git_content": git_content,
+                    "git_hooks": git_hooks,
+                    "labels": labels,
+                    "name": repo_name,
+                    "owner": repo_owner.username,
+                    "private": private,
+                    "topics": topics,
+                    "webhooks": webhooks
                 },
             )
             if "id" in result:
@@ -340,22 +402,22 @@ class Gitea:
             raise e
 
     def create_team(
-        self,
-        org: Organization,
-        name: str,
-        description: str = "",
-        permission: str = "read",
-        can_create_org_repo: bool = False,
-        includes_all_repositories: bool = False,
-        units=(
-            "repo.code",
-            "repo.issues",
-            "repo.ext_issues",
-            "repo.wiki",
-            "repo.pulls",
-            "repo.releases",
-            "repo.ext_wiki",
-        ),
+            self,
+            org: Organization,
+            name: str,
+            description: str = "",
+            permission: str = "read",
+            can_create_org_repo: bool = False,
+            includes_all_repositories: bool = False,
+            units=(
+                "repo.code",
+                "repo.issues",
+                "repo.ext_issues",
+                "repo.wiki",
+                "repo.pulls",
+                "repo.releases",
+                "repo.ext_wiki",
+            ),
     ):
         """Creates a Team.
 
