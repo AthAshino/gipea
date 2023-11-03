@@ -1,6 +1,22 @@
 # CHANGELOG
 
 
+## v0.7.0 (2023-11-03)
+
+
+
+
+### ✨ Features
+
+* ✨ Gipea: Add create_repo_from_template api route
+
+- Add new function to create a repository from a template.
+
+Refs: NM-498 ([`3d15ab0`](https://github.com/AthAshino/gipea/commit/3d15ab0cc5c962e6503f97b45dc439ef52502ebf))
+
+
+
+
 ## v0.6.1 (2023-09-07)
 
 
