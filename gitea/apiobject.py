@@ -67,16 +67,16 @@ class Organization(ApiObject):
         self.dirty_fields = {}
 
     def create_repo(
-        self,
-        repoName: str,
-        description: str = "",
-        private: bool = False,
-        autoInit=True,
-        gitignores: str = None,
-        license: str = None,
-        readme: str = "Default",
-        issue_labels: str = None,
-        default_branch="master",
+            self,
+            repoName: str,
+            description: str = "",
+            private: bool = False,
+            autoInit=True,
+            gitignores: str = None,
+            license: str = None,
+            readme: str = "Default",
+            issue_labels: str = None,
+            default_branch="master",
     ):
         """Create an organization Repository
 
@@ -251,16 +251,16 @@ class User(ApiObject):
         self.dirty_fields = {}
 
     def create_repo(
-        self,
-        repoName: str,
-        description: str = "",
-        private: bool = False,
-        autoInit=True,
-        gitignores: str = None,
-        license: str = None,
-        readme: str = "Default",
-        issue_labels: str = None,
-        default_branch="master",
+            self,
+            repoName: str,
+            description: str = "",
+            private: bool = False,
+            autoInit=True,
+            gitignores: str = None,
+            license: str = None,
+            readme: str = "Default",
+            issue_labels: str = None,
+            default_branch="master",
     ):
         """Create a user Repository
 
@@ -536,10 +536,10 @@ class Repository(ApiObject):
             ),
         )
 
-    def add_branch(self, create_from: Branch, newname: str) -> "Branch":
+    def add_branch(self, create_from: Branch, new_name: str) -> Branch:
         """Add a branch to the repository"""
         # Note: will only work with gitea 1.13 or higher!
-        data = {"new_branch_name": newname, "old_branch_name": create_from.name}
+        data = {"new_branch_name": new_name, "old_ref_name": create_from.name}
         try:
             result = self.gitea.requests_post(
                 Repository.REPO_BRANCHES % (self.owner.username, self.name), data=data
@@ -634,7 +634,7 @@ class Repository(ApiObject):
             raise e
 
     def create_milestone(
-        self, title: str, description: str, due_date: str = None, state: str = "open"
+            self, title: str, description: str, due_date: str = None, state: str = "open"
     ) -> "Milestone":
         url = Repository.REPO_MILESTONES.format(
             owner=self.owner.username, repo=self.name
@@ -702,9 +702,9 @@ class Repository(ApiObject):
         self.gitea.requests_delete(url)
 
     def transfer_ownership(
-        self,
-        new_owner: Union["User", "Organization"],
-        new_teams: Set["Team"] = frozenset(),
+            self,
+            new_owner: Union["User", "Organization"],
+            new_teams: Set["Team"] = frozenset(),
     ):
         url = Repository.REPO_TRANSFER.format(owner=self.owner.username, repo=self.name)
         data = {"new_owner": new_owner.username}
@@ -735,7 +735,7 @@ class Repository(ApiObject):
         return result
 
     def get_file_content_by_path(
-        self, content_path: str, ref: "Commit" or "Branch" = None
+            self, content_path: str, ref: "Commit" or "Branch" = None
     ) -> Union[str, List["Content"]]:
         url = f"/repos/{self.owner.username}/{self.name}/contents/{content_path}"
         data = {}
@@ -760,7 +760,7 @@ class Repository(ApiObject):
             return [Content.parse_response(self.gitea, f) for f in result]
 
     def get_file_content(
-        self, content: "Content", ref: "Commit" or "Branch" = None
+            self, content: "Content", ref: "Commit" or "Branch" = None
     ) -> Union[str, List["Content"]]:
         """https://try.gitea.io/api/swagger#/repository/repoGetContents"""
         return self.get_file_content_by_path(content.path, ref)
@@ -774,7 +774,7 @@ class Repository(ApiObject):
         return self.gitea.requests_post(url, data)
 
     def change_file(
-        self, file_path: str, file_sha: str, content: str, data: dict = None
+            self, file_path: str, file_sha: str, content: str, data: dict = None
     ):
         """https://try.gitea.io/api/swagger#/repository/repoCreateFile"""
         if not data:
@@ -782,6 +782,14 @@ class Repository(ApiObject):
         url = f"/repos/{self.owner.username}/{self.name}/contents/{file_path}"
         data.update({"sha": file_sha, "content": content})
         return self.gitea.requests_put(url, data)
+
+    def rename(self, new_name: str):
+        data = {"name": new_name}
+        self.edit_properties(data)
+
+    def edit_properties(self, data: dict = None):
+        args = {"owner": self.owner.username, "name": self.name}
+        self.gitea.requests_patch(self.API_OBJECT.format(**args), data=data)
 
     def delete(self):
         self.gitea.requests_delete(
@@ -791,27 +799,27 @@ class Repository(ApiObject):
 
     @classmethod
     def migrate_repo(
-        cls,
-        gitea: "Gitea",
-        service: str,
-        clone_addr: str,
-        repo_name: str,
-        description: str = "",
-        private: bool = False,
-        auth_token: str = None,
-        auth_username: str = None,
-        auth_password: str = None,
-        mirror: bool = False,
-        mirror_interval: str = None,
-        lfs: bool = False,
-        lfs_endpoint: str = "",
-        wiki: bool = False,
-        labels: bool = False,
-        issues: bool = False,
-        pull_requests: bool = False,
-        releases: bool = False,
-        milestones: bool = False,
-        repo_owner: str = None,
+            cls,
+            gitea: "Gitea",
+            service: str,
+            clone_addr: str,
+            repo_name: str,
+            description: str = "",
+            private: bool = False,
+            auth_token: str = None,
+            auth_username: str = None,
+            auth_password: str = None,
+            mirror: bool = False,
+            mirror_interval: str = None,
+            lfs: bool = False,
+            lfs_endpoint: str = "",
+            wiki: bool = False,
+            labels: bool = False,
+            issues: bool = False,
+            pull_requests: bool = False,
+            releases: bool = False,
+            milestones: bool = False,
+            repo_owner: str = None,
     ):
         """Migrate a Repository from another service.
 
@@ -1143,7 +1151,7 @@ class Content(ReadonlyApiObject):
         if not isinstance(other, Team):
             return False
         return (
-            self.repo == self.repo and self.sha == other.sha and self.name == other.name
+                self.repo == self.repo and self.sha == other.sha and self.name == other.name
         )
 
     def __hash__(self):
