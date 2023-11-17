@@ -1,6 +1,24 @@
 # CHANGELOG
 
 
+## v0.8.0 (2023-11-17)
+
+
+
+
+### ✨ Features
+
+* ✨ Gipea: Add a news functions to Gipea for PATCH a repository and PATCH the branch
+
+- Add new function for rename a repo
+- Add new function for edit properties of the repo
+- Add new function to get a repo
+
+Refs: NM-498 ([`fca11cb`](https://github.com/AthAshino/gipea/commit/fca11cbb4f0e4862cffbb9d65c3b65f2d64b592b))
+
+
+
+
 ## v0.7.0 (2023-11-03)
 
 
