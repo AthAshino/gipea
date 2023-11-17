@@ -27,6 +27,7 @@ class Gitea:
     GENERATE_REPO_WITH_TEMPLATE = """/repos/%s/%s/generate"""  # <template_owner>, <template_repo>
     GITEA_VERSION = """/version"""
     GET_USER = """/user"""
+    GET_REPO = """/repos/%s/%s"""  # <username> <repo>
     CREATE_ORG = """/admin/users/%s/orgs"""  # <username>
     CREATE_TEAM = """/orgs/%s/teams"""  # <orgname>
 
@@ -172,6 +173,10 @@ class Gitea:
     def get_user(self):
         result = self.requests_get(Gitea.GET_USER)
         return User.parse_response(self, result)
+
+    def get_repo(self, username , repoName):
+        result = self.requests_get(Gitea.GET_REPO % (username, repoName))
+        return Repository.parse_response(self, result)
 
     def get_version(self) -> str:
         result = self.requests_get(Gitea.GITEA_VERSION)
