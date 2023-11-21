@@ -174,7 +174,7 @@ class Gitea:
         result = self.requests_get(Gitea.GET_USER)
         return User.parse_response(self, result)
 
-    def get_repo(self, username , repoName):
+    def get_repo(self, username, repoName):
         result = self.requests_get(Gitea.GET_REPO % (username, repoName))
         return Repository.parse_response(self, result)
 

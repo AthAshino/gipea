@@ -440,6 +440,43 @@ class Branch(ReadonlyApiObject):
         return cls._request(gitea, {"owner": owner, "repo": repo, "ref": ref})
 
 
+class Tree(ReadonlyApiObject):
+    def __init__(self, gitea):
+        super().__init__(gitea)
+
+    def __eq__(self, other):
+        if not isinstance(other, TreeContent):
+            return False
+        return self.sha == other.sha
+
+    def __hash__(self):
+        return hash(self.gitea) ^ hash(self.sha)
+
+    _fields_to_parsers = {
+        # This is not a commit object
+        # "commit": lambda gitea, c: Commit.parse_response(gitea, c)
+        "tree": lambda gitea, us: [TreeContent.parse_response(gitea, u) for u in us],
+    }
+
+
+class TreeContent(ReadonlyApiObject):
+    def __init__(self, gitea):
+        super().__init__(gitea)
+
+    def __eq__(self, other):
+        if not isinstance(other, TreeContent):
+            return False
+        return self.sha == other.sha
+
+    def __hash__(self):
+        return hash(self.gitea) ^ hash(self.sha)
+
+    _fields_to_parsers = {
+        # This is not a commit object
+        # "commit": lambda gitea, c: Commit.parse_response(gitea, c)
+    }
+
+
 class Repository(ApiObject):
     API_OBJECT = """/repos/{owner}/{name}"""  # <owner>, <reponame>
     REPO_MIGRATE = """/repos/migrate"""
@@ -459,6 +496,7 @@ class Repository(ApiObject):
     REPO_COMMIT = "/repos/{owner}/{repo}/commits/{sha}"  # <owner>, <reponame>
     REPO_TRANSFER = "/repos/{owner}/{repo}/transfer"
     REPO_MILESTONES = """/repos/{owner}/{repo}/milestones"""
+    REPO_TREE_OF_A_REPOSITORY = """/repos/{owner}/{repo}/git/trees/{sha}"""
 
     def __init__(self, gitea):
         super().__init__(gitea)
@@ -579,6 +617,18 @@ class Repository(ApiObject):
             self.REPO_COMMIT.format(owner=self.owner.username, repo=self.name, sha=sha)
         )
         return Commit.parse_response(self.gitea, result)
+
+    def get_tree_of_a_repository(self, sha: str, recursive: bool = False, page: int = 0, per_page: int = 0):
+        data = {
+            "recursive": recursive,
+            "page": page,
+            "per_page": per_page
+            }
+        result = self.gitea.requests_get(
+            self.REPO_TREE_OF_A_REPOSITORY.format(owner=self.owner.username, repo=self.name, sha=sha),
+            params=data
+        )
+        return Tree.parse_response(self.gitea, result)
 
     def get_issues_state(self, state) -> List["Issue"]:
         """Get issues of state Issue.open or Issue.closed of a repository."""
