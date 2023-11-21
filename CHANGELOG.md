@@ -8,7 +8,7 @@
 
 ### ✨ Features
 
-* ✨ Gipea: Add new function to get the tree of a repository
+* Add new function to get the tree of a repository
 
 
 
@@ -20,11 +20,9 @@
 
 ### ✨ Features
 
-* ✨ Gipea: Add a news functions to Gipea for PATCH a repository and PATCH the branch
-
-- Add new function for rename a repo
-- Add new function for edit properties of the repo
-- Add new function to get a repo
+* Add new function for rename a repo
+* Add new function for edit properties of the repo
+* Add new function to get a repo
 
 
 
@@ -36,9 +34,7 @@
 
 ### ✨ Features
 
-* ✨ Gipea: Add create_repo_from_template api route
-
-- Add new function to create a repository from a template.
+* Add new function to create a repository from a template.
 
 
 
