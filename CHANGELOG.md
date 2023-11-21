@@ -10,8 +10,6 @@
 
 * ✨ Gipea: Add new function to get the tree of a repository
 
-Refs: NM-498 ([`ebc25c0`](https://github.com/AthAshino/gipea/commit/ebc25c091781b5bf2a1a696f7515a9bcc532e820))
-
 
 
 
@@ -28,8 +26,6 @@ Refs: NM-498 ([`ebc25c0`](https://github.com/AthAshino/gipea/commit/ebc25c091781
 - Add new function for edit properties of the repo
 - Add new function to get a repo
 
-Refs: NM-498 ([`fca11cb`](https://github.com/AthAshino/gipea/commit/fca11cbb4f0e4862cffbb9d65c3b65f2d64b592b))
-
 
 
 
@@ -43,8 +39,6 @@ Refs: NM-498 ([`fca11cb`](https://github.com/AthAshino/gipea/commit/fca11cbb4f0e
 * ✨ Gipea: Add create_repo_from_template api route
 
 - Add new function to create a repository from a template.
-
-Refs: NM-498 ([`3d15ab0`](https://github.com/AthAshino/gipea/commit/3d15ab0cc5c962e6503f97b45dc439ef52502ebf))
 
 
 
