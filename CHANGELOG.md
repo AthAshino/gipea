@@ -1,6 +1,20 @@
 # CHANGELOG
 
 
+## v0.9.0 (2023-11-21)
+
+
+
+
+### ✨ Features
+
+* ✨ Gipea: Add new function to get the tree of a repository
+
+Refs: NM-498 ([`ebc25c0`](https://github.com/AthAshino/gipea/commit/ebc25c091781b5bf2a1a696f7515a9bcc532e820))
+
+
+
+
 ## v0.8.0 (2023-11-17)
 
 
