@@ -22,6 +22,8 @@ from .apiobject import (
     Comment,
     Content,
     MigrationServices,
+    Tree,
+    TreeContent,
 )
 
 __all__ = [
@@ -43,4 +45,6 @@ __all__ = [
     "Comment",
     "Content",
     "MigrationServices",
+    "Tree",
+    "TreeContent",
 ]
