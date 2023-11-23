@@ -1,6 +1,18 @@
 # CHANGELOG
 
 
+## v0.10.0 (2023-11-23)
+
+
+
+
+### ✨ Features
+
+* ✨ Gipea: Add object Tree and TreeContent to the __init__.py ([`9b42b4b`](https://github.com/AthAshino/gipea/commit/9b42b4bf8241246f2f5dc5e89ca6ad83d52fb49f))
+
+
+
+
 ## v0.9.0 (2023-11-21)
 
 
@@ -8,7 +20,9 @@
 
 ### ✨ Features
 
-* Add new function to get the tree of a repository
+* ✨ Gipea: Add new function to get the tree of a repository
+
+Refs: NM-498 ([`ebc25c0`](https://github.com/AthAshino/gipea/commit/ebc25c091781b5bf2a1a696f7515a9bcc532e820))
 
 
 
@@ -20,9 +34,13 @@
 
 ### ✨ Features
 
-* Add new function for rename a repo
-* Add new function for edit properties of the repo
-* Add new function to get a repo
+* ✨ Gipea: Add a news functions to Gipea for PATCH a repository and PATCH the branch
+
+- Add new function for rename a repo
+- Add new function for edit properties of the repo
+- Add new function to get a repo
+
+Refs: NM-498 ([`fca11cb`](https://github.com/AthAshino/gipea/commit/fca11cbb4f0e4862cffbb9d65c3b65f2d64b592b))
 
 
 
@@ -34,7 +52,11 @@
 
 ### ✨ Features
 
-* Add new function to create a repository from a template.
+* ✨ Gipea: Add create_repo_from_template api route
+
+- Add new function to create a repository from a template.
+
+Refs: NM-498 ([`3d15ab0`](https://github.com/AthAshino/gipea/commit/3d15ab0cc5c962e6503f97b45dc439ef52502ebf))
 
 
 
