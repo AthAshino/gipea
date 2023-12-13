@@ -498,6 +498,8 @@ class Repository(ApiObject):
     REPO_MILESTONES = """/repos/{owner}/{repo}/milestones"""
     REPO_TREE_OF_A_REPOSITORY = """/repos/{owner}/{repo}/git/trees/{sha}"""
 
+    REPO_FILE = """/repos/{owner}/{repo}/contents/{filepath}"""
+
     def __init__(self, gitea):
         super().__init__(gitea)
 
@@ -623,7 +625,7 @@ class Repository(ApiObject):
             "recursive": recursive,
             "page": page,
             "per_page": per_page
-            }
+        }
         result = self.gitea.requests_get(
             self.REPO_TREE_OF_A_REPOSITORY.format(owner=self.owner.username, repo=self.name, sha=sha),
             params=data
@@ -787,15 +789,7 @@ class Repository(ApiObject):
     def get_file_content_by_path(
             self, content_path: str, ref: "Commit" or "Branch" = None
     ) -> Union[str, List["Content"]]:
-        url = f"/repos/{self.owner.username}/{self.name}/contents/{content_path}"
-        data = {}
-        if ref:
-            if isinstance(ref, Commit):
-                data = {"ref": ref.sha}
-            elif isinstance(ref, Branch):
-                data = {"ref": ref.name}
-
-        result = self.gitea.requests_get(url, data)
+        result = self._get_file_metadata(content_path, ref)
         if isinstance(result, dict) and result.get("type", "") == Content.FILE:
             if encoding := result.get("encoding", None):
                 match encoding:
@@ -808,6 +802,24 @@ class Repository(ApiObject):
 
         else:
             return [Content.parse_response(self.gitea, f) for f in result]
+
+    def get_file_metadata(self, content_path: str, ref: "Commit" or "Branch" = None) -> Dict:
+        url = Repository.REPO_FILE.format({
+            "owner": self.owner.username, "name": self.name, "filepath": content_path
+        })
+        data = {}
+        if ref:
+            if isinstance(ref, Commit):
+                data = {"ref": ref.sha}
+            elif isinstance(ref, Branch):
+                data = {"ref": ref.name}
+        return self.gitea.requests_get(url, data)
+
+    def get_file_sha(
+            self, content_path: str, ref: "Commit" or "Branch" = None
+    ) -> str:
+        result = self.get_file_metadata(content_path, ref)
+        return result.get("sha", "")
 
     def get_file_content(
             self, content: "Content", ref: "Commit" or "Branch" = None
