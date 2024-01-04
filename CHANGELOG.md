@@ -1,6 +1,18 @@
 # CHANGELOG
 
 
+## v0.11.1 (2024-01-04)
+
+
+### 🐛 Fixes
+
+* :bug: Fix typo on get_file_metadata usage ([`73ec352`](https://github.com/AthAshino/gipea/commit/73ec3523eb307dce0ac83ceaf43f0f0cb8aa44ad))
+
+
+
+
+
+
 ## v0.11.0 (2023-12-24)
 
 
