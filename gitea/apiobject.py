@@ -789,7 +789,7 @@ class Repository(ApiObject):
     def get_file_content_by_path(
             self, content_path: str, ref: "Commit" or "Branch" = None
     ) -> Union[str, List["Content"]]:
-        result = self._get_file_metadata(content_path, ref)
+        result = self.get_file_metadata(content_path, ref)
         if isinstance(result, dict) and result.get("type", "") == Content.FILE:
             if encoding := result.get("encoding", None):
                 match encoding:
