@@ -1,6 +1,18 @@
 # CHANGELOG
 
 
+## v0.11.2 (2024-01-05)
+
+
+### 🐛 Fixes
+
+* :bug: Use constant and fix typo in URL ([`324dee6`](https://github.com/AthAshino/gipea/commit/324dee6817c1c869d946f6b816f01a5899f923c5))
+
+
+
+
+
+
 ## v0.11.1 (2024-01-04)
 
 
