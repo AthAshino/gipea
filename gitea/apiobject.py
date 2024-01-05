@@ -804,9 +804,7 @@ class Repository(ApiObject):
             return [Content.parse_response(self.gitea, f) for f in result]
 
     def get_file_metadata(self, content_path: str, ref: "Commit" or "Branch" = None) -> Dict:
-        url = Repository.REPO_FILE.format({
-            "owner": self.owner.username, "name": self.name, "filepath": content_path
-        })
+        url = Repository.REPO_FILE.format(owner=self.owner.username, repo=self.name, filepath=content_path)
         data = {}
         if ref:
             if isinstance(ref, Commit):
@@ -831,17 +829,15 @@ class Repository(ApiObject):
         """https://try.gitea.io/api/swagger#/repository/repoCreateFile"""
         if not data:
             data = {}
-        url = f"/repos/{self.owner.username}/{self.name}/contents/{file_path}"
+        url = Repository.REPO_FILE.format(owner=self.owner.username, repo=self.name, filepath=file_path)
         data.update({"content": content})
         return self.gitea.requests_post(url, data)
 
-    def change_file(
-            self, file_path: str, file_sha: str, content: str, data: dict = None
-    ):
+    def change_file(self, file_path: str, file_sha: str, content: str, data: dict = None):
         """https://try.gitea.io/api/swagger#/repository/repoCreateFile"""
         if not data:
             data = {}
-        url = f"/repos/{self.owner.username}/{self.name}/contents/{file_path}"
+        url = Repository.REPO_FILE.format(owner=self.owner.username, repo=self.name, filepath=file_path)
         data.update({"sha": file_sha, "content": content})
         return self.gitea.requests_put(url, data)
 
